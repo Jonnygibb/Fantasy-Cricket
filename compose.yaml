@@ -1,0 +1,59 @@
+
+# The services that will be ran as part of this project.
+services:
+  # Define the web service (nextjs).
+  
+  web:
+    # Make the web services dependent on the database being built.
+    depends_on:
+      - mongo
+
+    # Tech-stack environment variables.
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}
+
+    # Use the dockerfile to build the web service.
+    build:
+      context: .
+      dockerfile: Dockerfile
+
+    # Expose dev PC port 3000 to docker container 3000.
+    ports:
+      - 3000:3000
+
+    develop:
+      # Any files mentioned here will cause an action in the container when edited on the dev machine.
+      watch:
+        - path: ./package.json
+          action: rebuild
+        - path: ./next.config.js
+          action: rebuild
+        - path: ./package-lock.json
+          action: rebuild
+          
+          # Changes to the app UI will sync without a rebuild. 
+        - path: .
+          target: /app
+          action: sync
+
+  # Define the db service.
+  mongo:
+    # Specify the image to use for the db service from docker hub.
+    image: mongo:latest
+    # Specify the ports to expose for the db service.
+    ports:
+      - 27017:27017
+
+    # Initialise the database using the init script.
+    volumes:
+      # Run initialisation script if database volume does not exist.
+      - ./mongodb/initdb.d/mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
+      # Save the data in the database.
+      - mongodb-data:/data/db
+
+# Define the volumes to be used by the services.
+volumes:
+  mongodb-data:
+    driver: local
+    name: mongo-data
