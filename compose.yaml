@@ -40,7 +40,7 @@ services:
   # Define the db service.
   mongo:
     # Specify the image to use for the db service from docker hub.
-    image: mongo:latest
+    image: mongo
     # Specify the ports to expose for the db service.
     ports:
       - 27017:27017
