@@ -13,7 +13,17 @@ export async function GET(req) {
 	// if _id is in the queryParams, convert it to a mongodb objectID instance
 	if ("_id" in queryParams){
 		console.log(queryParams["_id"]);
-		queryParams["_id"] = new ObjectId(queryParams["_id"])
+		queryParams["_id"] = new ObjectId(queryParams["_id"]);
+	}
+
+	if ("Points" in queryParams){
+		console.log(queryParams["Points"]);
+		queryParams["Points"] = parseFloat(queryParams["Points"]);
+	}
+
+	if ("Free Agent" in queryParams){
+		console.log(queryParams["Free Agent"]);
+		queryParams["Free Agent"] = parseInt(queryParams["Free Agent"]);
 	}
 
 	// try to query the db and return the results
@@ -26,7 +36,7 @@ export async function GET(req) {
 			.find(queryParams)
 			.toArray();
 		return Response.json(players);
-
+		
 	} catch (e) {
 		console.error(e);
 		return Response.json({});

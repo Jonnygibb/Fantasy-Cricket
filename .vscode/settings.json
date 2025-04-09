@@ -1,0 +1,9 @@
+{
+    "[typescript]": {
+        "editor.quickSuggestions": {
+            "other": "off"
+        }
+    },
+    "[typescriptreact]": {
+    }
+}
