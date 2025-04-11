@@ -10,11 +10,11 @@ COPY package*.json ./
 # Install the dependencies.
 RUN npm install
 
-# Copy the rest of the source files into the image.
-COPY . .
+# Bind mounting the source code so COPY no longer necesssary.
+# COPY . .
 
 # Expose the port that the application listens on.
 EXPOSE 3000
 
 # Run the application.
-CMD npm run dev
+CMD ["npm", "run", "dev"]
