@@ -46,7 +46,6 @@ export async function GET(req) {
 export async function PUT(req) {
 	const body = await req.json();
 
-
 	// TODO
 	// should probably move this logic to another global func
 	// i.e. res/db/connect or something
@@ -98,7 +97,7 @@ export async function PUT(req) {
 export async function DELETE(req) {
 	const body = await req.json();
 
-	if (!body.includes("_id")){
+	if (!"_id" in body){
 		return ({"Status": "ID needs to be supplied to ensure correct record is removed"});
 	}
 
@@ -108,10 +107,14 @@ export async function DELETE(req) {
 		db = client.db("testDB");
 	} catch (e) {
 		console.error(e);
-		return Response.json({});
+		return Response.json({"Status": e});
 	}
 
-	
+	body["_id"] = new ObjectId(body["_id"]);
 
-	return Response.json({"Status": "Unimplemented"});
+	db.collection("players").deleteOne(body, function(err, obj){
+		if (err) return Response.json({"Status": err});
+	});
+
+	return Response.json({"Status": "Done"});
 }
