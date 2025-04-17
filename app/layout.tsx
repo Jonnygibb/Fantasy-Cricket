@@ -1,4 +1,5 @@
 import './globals.css';
+import LayoutShell from './components/LayoutShell';
 import AuthProvider from './components/SessionProvider';
 
 export default function RootLayout({
@@ -9,7 +10,11 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <AuthProvider>{children}</AuthProvider>
+        <AuthProvider>
+          <LayoutShell>
+            {children}
+          </LayoutShell>
+        </AuthProvider>
       </body>
     </html>
   );
