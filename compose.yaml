@@ -12,6 +12,7 @@ services:
     environment:
       MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME}
       MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}
+      MONGODB_URI: "mongodb://mongo:27017"
 
     # Use the dockerfile to build the web service.
     build:
