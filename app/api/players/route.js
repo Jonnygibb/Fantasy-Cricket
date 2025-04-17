@@ -42,3 +42,79 @@ export async function GET(req) {
 		return Response.json({});
 	}
 }
+
+export async function PUT(req) {
+	const body = await req.json();
+
+	// TODO
+	// should probably move this logic to another global func
+	// i.e. res/db/connect or something
+	let db = NaN;
+	try {
+		const client = await MongoClient.connect(uri);
+		db = client.db("testDB");
+	} catch (e) {
+		console.error(e);
+		return Response.json({});
+	}
+
+	// if the user specifies an id, update the record
+	// otherwise add a new record
+	if ("_id" in body){
+		// reformat the id as a objectID and then pop it from the json object
+		const id = {"_id" : new ObjectId(body["_id"])};
+		delete body["_id"];
+
+		// query the DB for the player
+		const players = await db.collection("players")
+			.find(id)
+			.toArray();
+
+		// if the player is found update it, otherwise return not found
+		if (players.length != 0){
+			db.collection("players").updateOne(id, {$set: body}, function(err, res){
+				if (err){
+					return Response.json({"error": err})
+				}		
+			})
+
+			return Response.json({"Status": "Updated"});
+		}
+
+		return Response.json({"Status": "ID not found"})
+
+	} else {
+		db.collection("players").insertOne(body, function(err, res){
+			if (err){
+				return Response.json({"error": err})
+			}	
+		})
+
+		return Response.json({"Status": "Inserted"})
+	}
+}
+
+export async function DELETE(req) {
+	const body = await req.json();
+
+	if (!"_id" in body){
+		return ({"Status": "ID needs to be supplied to ensure correct record is removed"});
+	}
+
+	let db = NaN;
+	try {
+		const client = await MongoClient.connect(uri);
+		db = client.db("testDB");
+	} catch (e) {
+		console.error(e);
+		return Response.json({"Status": e});
+	}
+
+	body["_id"] = new ObjectId(body["_id"]);
+
+	db.collection("players").deleteOne(body, function(err, obj){
+		if (err) return Response.json({"Status": err});
+	});
+
+	return Response.json({"Status": "Done"});
+}
