@@ -54,14 +54,14 @@ export default function LayoutShell({ children }: { children: React.ReactNode })
               onClick={() => signOut()}
               className="bg-indigo-500 hover:bg-indigo-700 text-white px-4 py-2 rounded-md"
             >
-              Sign Out
+              {session!.user?.email}
             </button>
           ) : (
             <button
               onClick={() => signIn()}
               className="bg-indigo-500 hover:bg-indigo-700 text-white px-4 py-2 rounded-md"
             >
-              Sign In
+              Sign in
             </button>
           )}
         </div>
