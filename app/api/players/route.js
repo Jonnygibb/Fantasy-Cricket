@@ -1,4 +1,5 @@
 import { MongoClient, ObjectId } from "mongodb";
+import dbPromise from "../../lib/db";
 
 const uri = process.env.MONGODB_URI || "mongodb://mongo:27017";  // Fallback to 'mongo' if the environment variable isn't set.
 
@@ -26,37 +27,17 @@ export async function GET(req) {
 		queryParams["Free Agent"] = parseInt(queryParams["Free Agent"]);
 	}
 
-	// try to query the db and return the results
-	// if it errors out, catch the error and return an empty json
-	try {
-		const client = await MongoClient.connect(uri);
-		const db = client.db("testDB");
-
-		const players = await db.collection("players")
-			.find(queryParams)
-			.toArray();
-		return Response.json(players);
-		
-	} catch (e) {
-		console.error(e);
-		return Response.json({});
-	}
+	const db = await dbPromise;
+	const players = await db.collection("players")
+		.find(queryParams)
+		.toArray();
+	return Response.json(players);
 }
 
 export async function PUT(req) {
 	const body = await req.json();
 
-	// TODO
-	// should probably move this logic to another global func
-	// i.e. res/db/connect or something
-	let db = NaN;
-	try {
-		const client = await MongoClient.connect(uri);
-		db = client.db("testDB");
-	} catch (e) {
-		console.error(e);
-		return Response.json({});
-	}
+	const db = await dbPromise;
 
 	// if the user specifies an id, update the record
 	// otherwise add a new record
@@ -101,14 +82,7 @@ export async function DELETE(req) {
 		return ({"Status": "ID needs to be supplied to ensure correct record is removed"});
 	}
 
-	let db = NaN;
-	try {
-		const client = await MongoClient.connect(uri);
-		db = client.db("testDB");
-	} catch (e) {
-		console.error(e);
-		return Response.json({"Status": e});
-	}
+	const db = await dbPromise;
 
 	body["_id"] = new ObjectId(body["_id"]);
 
