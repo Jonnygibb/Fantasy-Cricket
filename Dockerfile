@@ -6,6 +6,9 @@ WORKDIR /app
 FROM base AS deps
 COPY package.json package-lock.json* ./
 RUN npm install
+# Copy the prisma schema and generate the client
+COPY prisma .prisma
+RUN npx prisma generate
 
 # Dev Stage - Allows for refreshing of web interface
 FROM deps AS dev
@@ -31,6 +34,10 @@ ENV NODE_ENV=production
 # Install only production deps
 COPY package.json package-lock.json* ./
 RUN npm install --omit=dev
+
+# Copy Prisma schema and generate client again
+COPY prisma ./prisma
+RUN npx prisma generate
 
 # Copy built assets from builder
 COPY --from=builder /app/.next ./.next
