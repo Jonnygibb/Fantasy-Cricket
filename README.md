@@ -5,7 +5,7 @@ Fantasy Cricket app utilising a dockerized nextjs app with a postgresql database
 The app can be ran in development mode by running the below commands.
 
 ```
-docker compose up web-dev db
+docker compose up
 ```
 
 # Things I've Learnt So Far
@@ -57,3 +57,7 @@ export const prisma =
 if (process.env.NODE_ENV !== 'production')
   globalForPrisma.prisma = prisma;
 ```
+
+## Volumes Overwrite Copied Files
+
+When I was trying to perform prisma generation, I wanted my locally generated prisma migrations to make it into the container. However, when using volume mounts, the entire local app filesystem is placed over the conatiner filesystem from the WORKDIR. This meant my local prisma migrations were in the container, but my migration happened before the volume mount had happened.
