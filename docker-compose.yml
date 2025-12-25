@@ -39,7 +39,7 @@ services:
       target: dev
     container_name: fantasy-cricket-web-dev
     ports:
-      - "3001:3000"
+      - "3000:3000"
     # Enables hot reloading by sharing a volume with the local app folder.
     # /app/node_modules is maintained in the container to keep the modules
     # consistent in the container.

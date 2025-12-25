@@ -1,15 +1,18 @@
-// Use the generated prisma client made via the dockerfile
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient } from "../generated/prisma_client/client";
+import { PrismaPg } from "@prisma/adapter-pg";
 
-// Declare in global that 'prisma' is of type PrismaClient
+const adapter = new PrismaPg({
+  connectionString: process.env.DATABASE_URL!,
+});
+
 const globalForPrisma = global as unknown as {
-  prisma: PrismaClient | undefined;
-};
+    prisma: PrismaClient
+}
 
-// Check if prisma already exists. If not, create it.
-export const prisma =
-  globalForPrisma.prisma ?? new PrismaClient();
+const prisma = globalForPrisma.prisma || new PrismaClient({
+  adapter,
+})
 
-// If environment is not prod, cache the prisma client.
-if (process.env.NODE_ENV !== 'production')
-  globalForPrisma.prisma = prisma;
+if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma
+
+export default prisma

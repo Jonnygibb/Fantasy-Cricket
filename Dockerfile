@@ -1,16 +1,27 @@
-# Base Image
-FROM node:25-alpine AS base
+# ----------------------------------
+# Base
+# ----------------------------------
+FROM node:24-alpine AS base
 WORKDIR /app
 
-# Dependencies Stage
+# ----------------------------------
+# Dependencies + Prisma generation
+# ----------------------------------
 FROM base AS deps
-COPY package.json package-lock.json* ./
-RUN npm install
-# Copy the prisma schema and generate the client
-COPY prisma .prisma
+
+# Install deps
+COPY package.json package-lock.json ./
+RUN npm ci
+
+# Copy Prisma schema & config
+COPY prisma ./prisma
+
+# Generate Prisma Client
 RUN npx prisma generate
 
-# Dev Stage - Allows for refreshing of web interface
+# ----------------------------------
+# Dev Stage
+# ----------------------------------
 FROM deps AS dev
 WORKDIR /app
 COPY . .
@@ -19,31 +30,41 @@ EXPOSE 3000
 
 CMD ["npm", "run", "dev"]
 
-# Builder Stage
-FROM deps AS builder
+# ----------------------------------
+# Build stage
+# ----------------------------------
+FROM base AS build
 WORKDIR /app
+
+# Bring everything needed
+COPY --from=deps /app/node_modules ./node_modules
+COPY --from=deps /app/generated ./generated
+COPY --from=deps /app/prisma ./prisma
+
+# Copy app source
 COPY . .
+
+# Build Next.js
 RUN npm run build
 
-# Production Runtime Stage
-FROM node:25-alpine AS production
+# ----------------------------------
+# Production runtime
+# ----------------------------------
+FROM node:24-alpine AS production
 WORKDIR /app
-
 ENV NODE_ENV=production
 
-# Install only production deps
-COPY package.json package-lock.json* ./
-RUN npm install --omit=dev
+# Install prod deps only
+COPY package.json package-lock.json ./
+RUN npm ci --omit=dev
 
-# Copy Prisma schema and generate client again
-COPY prisma ./prisma
-RUN npx prisma generate
-
-# Copy built assets from builder
-COPY --from=builder /app/.next ./.next
-COPY --from=builder /app/public ./public
-COPY --from=builder /app/next.config.js ./
-COPY --from=builder /app/package.json ./
+# Copy runtime artifacts
+COPY --from=build /app/.next ./.next
+COPY --from=build /app/public ./public
+COPY --from=build /app/next.config.ts ./
+COPY --from=build /app/generated ./generated
+COPY --from=build /app/node_modules ./node_modules
 
 EXPOSE 3000
 CMD ["npm", "start"]
+    
